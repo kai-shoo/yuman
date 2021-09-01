@@ -14,7 +14,7 @@ const PlasticLayout = styled(Grid).attrs(props => ({
   
   height: ${props => props.height};
   width: calc(${props => props.height} * ${props => props.$aspectRatio});
-  background-color: lightgrey;
+  background-color: ${props => props.bgc || 'black'};
   border-radius: calc(${props => props.height} * 0.06);
 `
 
