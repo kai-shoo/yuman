@@ -22,7 +22,7 @@ function PlasticCard({ logo = defaultLogo, logoAlt = 'Тинькофф Банк'
               <PlasticLogo src={logo} alt={logoAlt} />
             </Box>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item >
             <PaymentChip type={type} />
           </Grid>
         </Grid>

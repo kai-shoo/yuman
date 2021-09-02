@@ -8,14 +8,17 @@ const PlasticLayout = styled(Grid).attrs(props => ({
   $aspectRatio: props.aspectRatio || ASPECT_RATIO_ISO,
 }))`
   display: grid;
-  grid-template-rows: 40% 40px 40%;
+  grid-gap: 16px;
+  grid-template-rows: repeat(3, 1fr) ;
   justify-content: stretch;
   align-content: space-between;
+  padding: 16px;
   
   height: ${props => props.height};
   width: calc(${props => props.height} * ${props => props.$aspectRatio});
   background-color: ${props => props.bgc || 'black'};
   border-radius: calc(${props => props.height} * 0.06);
+  box-shadow: 0 0 8px lightgrey;
 `
 
 export { PlasticLayout }
