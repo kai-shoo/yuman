@@ -4,6 +4,7 @@ import { PlasticCard } from './components/PlasticCard';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import { grey, purple } from '@material-ui/core/colors';
 import { AddCardForm } from './components/AddCardForm'
+import { useRef, useState } from 'react';
 
 const theme = createTheme({
   palette: {
@@ -33,8 +34,16 @@ const cards = [
 ]
 
 
-
 function App() {
+
+  const [cards, setCards] = useState([]);
+
+  const inputRef = useRef(null);
+  const onClickHandler = (ref) => {
+    inputRef.current.focus();
+  }
+
+
   return (
     <ThemeProvider theme={theme}>
       <Container>
@@ -47,20 +56,15 @@ function App() {
               </Grid>)}
           </Grid>
           <Box my={4}>
-            <Button variant="contained" color="primary">
+            <Button variant="contained" color="primary" onClick={onClickHandler}>
               Привязать еще одну
             </Button>
           </Box>
         </Section>
 
         <Section>
-          <Typography variant="h2" gutterBottom>Перевод на кошелёк</Typography>
-          <AddCardForm />
-        </Section>
-
-        <Section>
           <Typography variant="h2" gutterBottom>Привязка банковской карты</Typography>
-
+          <AddCardForm ref={inputRef} />
         </Section>
 
       </Container>
