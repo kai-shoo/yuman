@@ -1,9 +1,11 @@
 import { Grid, FormControl, OutlinedInput, FormHelperText, Button, Box, InputLabel } from '@material-ui/core';
 import { PaymentChip } from './PaymentChip';
 import { PlasticLayout } from './PlasticLayout';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { isDateExpired, isDateMMYY, isDateMonthValid, luhnCheck } from '../utils/plastic';
+import {
+  clearSpaces, addSpaces, formatDate, cleanDate, getDigits, formatCvc, validateCvc, validatePan, validateDate,
+} from '../utils/form';
 
 
 const FormHelperWrapper = styled(FormHelperText)`
@@ -18,14 +20,8 @@ const InputLabelWrapper = styled(InputLabel)`
   transform: initial;
 `
 
-const clearSpaces = (string) => string.replace(/ /g, '');
-const addSpaces = (string) => string.replace(/(.{4})/g, '$1 ');
-const formatDate = string => string.replace(/(.{2})/, '$1/');
-const cleanDate = string => string.split('/').join('');
-const getDigits = string => string.replace(/[^0-9]+/g, '');
-const formatCvc = string => string.replace(/(.)/g, '*')
 
-const AddCardForm = forwardRef(({ focus, putFocus }, ref) => {
+const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
   const [pan, setPan] = useState('');
   const [date, setDate] = useState('');
   const [cvc, setCvc] = useState('');
@@ -35,7 +31,6 @@ const AddCardForm = forwardRef(({ focus, putFocus }, ref) => {
   const formattedCvc = formatCvc(cvc);
   ///////////
   const handlePanKeyDown = e => {
-
     const is4thChar = formattedPan.slice(-1) === ' ';
     if (e.code === 'Backspace' && is4thChar) {
       e.preventDefault();
@@ -73,58 +68,59 @@ const AddCardForm = forwardRef(({ focus, putFocus }, ref) => {
     }
   }
 
-  const onCLickResetHandler = (e) => {
-    e.preventDefault();
+  const clearError = () => {
+    setErrorPan('');
+    setErrorCvc('');
+    setErrorDate('');
+  }
+
+  const clearForm = () => {
     setDate('')
     setCvc('')
     setPan('')
+  }
+
+  const onCLickResetHandler = (e) => {
+    e.preventDefault();
+    clearForm();
   }
 
   const [errorPan, setErrorPan] = useState('');
   const [errorDate, setErrorDate] = useState('');
   const [errorCvc, setErrorCvc] = useState('');
 
+  const validateForm = useCallback(() => {
+    const errorMessagePan = validatePan(pan, isStored);
+    clearError();
+    setErrorPan(errorMessagePan);
+    if (Boolean(errorMessagePan)) return false;
+
+    const errorMessageDate = validateDate(date);
+    clearError();
+    setErrorDate(errorMessageDate);
+    if (Boolean(errorMessageDate)) return false;
+
+    const errorMessageCvc = validateCvc(cvc)
+    clearError();
+    setErrorCvc(errorMessageCvc);
+    if (Boolean(errorMessageCvc)) return false;
+
+    return true;
+  }, [setErrorPan, setErrorDate, setErrorCvc, cvc, date, isStored, pan])
+
   const handleSumbit = (e) => {
     e.preventDefault();
 
-    const validateCvc = (cvc) => {
-      const isEmpty = cvc.length !== 3;
-      if (isEmpty) return 'Введите cvc';
-
-
-      return '';
+    if (validateForm()) {
+      onSuccess(pan);
+      clearForm();
     }
-
-    const errorMessageCvc = validateCvc(validateCvc)
-    setErrorCvc(errorMessageCvc);
-
-    const validatePan = (pan) => {
-      const isEmpty = pan.length === 0;
-      if (isEmpty) return 'Введите номер карты';
-
-      const isPanNotValid = !luhnCheck(pan);
-      if (isPanNotValid) return 'Номер карты не верный'
-
-      return '';
-    }
-    const errorMessagePan = validatePan(pan);
-    setErrorPan(errorMessagePan);
-
-    const validateDate = (date) => {
-      const isEmpty = date.length !== 4;
-      if (isEmpty) return 'Введите дату';
-      if (isDateExpired(date)) return 'Дата должна быть вида ММ/ГГ ';
-      if (isDateMMYY(date)) return 'Первые две цифры указывают месяц (01-12)';
-      if (isDateMonthValid(date)) return 'У карты прошёл срок использования';
-
-      return '';
-    }
-    const errorMessageDate = validateDate(date);
-    setErrorDate(errorMessageDate);
-
-
   }
 
+  useEffect(() => {
+    const wasFailedAttempt = Boolean(errorCvc) || Boolean(errorDate) || Boolean(errorPan);
+    if (wasFailedAttempt) validateForm();
+  }, [errorCvc, errorDate, errorPan, validateForm])
 
   return <form onSubmit={handleSumbit} noValidate>
     <PlasticLayout bgc="white" container>

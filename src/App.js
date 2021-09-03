@@ -2,45 +2,57 @@ import { Container, Typography, Grid, Button, Box } from '@material-ui/core';
 import { Section } from './components/Section'
 import { PlasticCard } from './components/PlasticCard';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
-import { grey, purple } from '@material-ui/core/colors';
+import { green, grey, purple } from '@material-ui/core/colors';
 import { AddCardForm } from './components/AddCardForm'
 import { useRef, useState } from 'react';
+import { SuccessDialog } from './components/SuccessDialog'
 
 const theme = createTheme({
   palette: {
+    success: {
+      main: green[500],
+    },
     secondary: {
       main: grey[500],
     },
-
     primary: {
       main: purple[600],
     }
   },
 });
 
-const cards = [
+const MOCK = [
   {
-    pan: '313131331313133131313',
+    pan: '374245455400126',
     type: 'master'
   },
   {
-    pan: '313131331313133131313',
+    pan: '6011000991300009',
     type: 'master'
   },
   {
-    pan: '31313133131313',
+    pan: '5200533989557118',
     type: 'master'
   },
 ]
 
 
 function App() {
-
-  const [cards, setCards] = useState([]);
-
+  const [open, setOpen] = useState(false);
+  const [cards, setCards] = useState(MOCK);
+  const isStored = (pan) => cards.find(card => card.pan === pan)
   const inputRef = useRef(null);
   const onClickHandler = (ref) => {
     inputRef.current.focus();
+  }
+
+  const addCard = (pan, type = 'master') => {
+    setCards(cards => [...cards, { pan, type }])
+    setOpen(true);
+  }
+
+  const handleClose = () => {
+    setOpen(false);
   }
 
 
@@ -64,10 +76,11 @@ function App() {
 
         <Section>
           <Typography variant="h2" gutterBottom>Привязка банковской карты</Typography>
-          <AddCardForm ref={inputRef} />
+          <AddCardForm ref={inputRef} isStored={isStored} onSuccess={addCard} />
         </Section>
 
       </Container>
+      <SuccessDialog open={open} onClose={handleClose} />
     </ThemeProvider >
   );
 }
