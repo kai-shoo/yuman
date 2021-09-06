@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import {
   clearSpaces, addSpaces, formatDate, cleanDate, getDigits, formatCvc, validateCvc, validatePan, validateDate,
 } from '../utils/form';
+import { useRef } from 'react';
 
 
 const FormHelperWrapper = styled(FormHelperText)`
@@ -40,6 +41,7 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
 
   const handlePanChange = (e) => {
     const newPan = getDigits(clearSpaces(e.target.value))
+    panSelection.current = e.target.selectionStart;
     setPan(newPan)
   }
   //////////
@@ -53,6 +55,7 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
 
   const handleDateChange = (e) => {
     const newDate = getDigits(cleanDate(e.target.value));
+    dateSelection.current = e.target.selectionStart;
     setDate(newDate)
   }
 
@@ -66,6 +69,8 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
     if (newLength < cvc.length) {
       setCvc(cvc => cvc.slice(0, -1))
     }
+
+    cvcSelection.current = e.target.selectionStart;
   }
 
   const clearError = () => {
@@ -120,7 +125,25 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
   useEffect(() => {
     const wasFailedAttempt = Boolean(errorCvc) || Boolean(errorDate) || Boolean(errorPan);
     if (wasFailedAttempt) validateForm();
-  }, [errorCvc, errorDate, errorPan, validateForm])
+  }, [errorCvc, errorDate, errorPan, validateForm]);
+
+  const dateDom = useRef(null);
+  const cvcDom = useRef(null);
+
+  const panSelection = useRef(0);
+  const dateSelection = useRef(0);
+  const cvcSelection = useRef(0);
+
+  useEffect(() => {
+    ref.current.selectionStart = panSelection.current;
+    ref.current.selectionEnd = panSelection.current;
+
+    dateDom.current.selectionStart = dateSelection.current;
+    dateDom.current.selectionEnd = dateSelection.current;
+
+    cvcDom.current.selectionStart = cvcSelection.current;
+    cvcDom.current.selectionEnd = cvcSelection.current;
+  }, [pan, cvc, date, ref]);
 
   return <form onSubmit={handleSumbit} noValidate>
     <PlasticLayout bgc="white" container>
@@ -165,6 +188,7 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
             error={Boolean(errorDate)}
           >
             <OutlinedInput
+              inputRef={dateDom}
               id="date"
               name="date"
               placeholder="ММ/ГГ"
@@ -189,6 +213,7 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
               </Grid>
               <Grid item xs={5}>
                 <OutlinedInput
+                  inputRef={cvcDom}
                   id="cvc"
                   name="cvc"
                   required
