@@ -143,7 +143,7 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
       ref.current.selectionEnd = panSelection.current;
     }
 
-    if (dateDom.current.selectionStart % 5 === 0) {
+    if (dateDom.current.selectionStart % 3 === 0) {
       dateDom.current.selectionStart = dateSelection.current + 1;
       dateDom.current.selectionEnd = dateSelection.current + 1;
     } else {
@@ -151,14 +151,9 @@ const AddCardForm = forwardRef(({ isStored, onSuccess }, ref) => {
       dateDom.current.selectionEnd = dateSelection.current;
     }
 
-    if (ref.current.selectionStart % 5 === 0) {
-      cvcDom.current.selectionStart = cvcSelection.current + 1;
-      cvcDom.current.selectionEnd = cvcSelection.current + 1;
-    } else {
-      cvcDom.current.selectionStart = cvcSelection.current;
-      cvcDom.current.selectionEnd = cvcSelection.current;
-    }
 
+    cvcDom.current.selectionStart = cvcSelection.current;
+    cvcDom.current.selectionEnd = cvcSelection.current;
   }, [pan, cvc, date, ref]);
 
   return <form onSubmit={handleSumbit} noValidate>
